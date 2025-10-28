@@ -152,3 +152,76 @@ def test_divide_by_zero_api(client):
     # Assert that the 'error' field contains the correct error message
     assert "Cannot divide by zero!" in response.json()['error'], \
         f"Expected error message 'Cannot divide by zero!', got '{response.json()['error']}'"
+
+# ---------------------------------------------
+# Test Function: test_root_endpoint
+# ---------------------------------------------
+
+def test_root_endpoint(client):
+    """
+    Test the Root Endpoint (GET /).
+
+    This test verifies that the root endpoint returns the HTML template correctly.
+    """
+    response = client.get('/')
+    
+    # Assert that the response status code is 200 (OK)
+    assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
+    
+    # Assert that the response contains HTML content
+    assert response.headers["content-type"].startswith("text/html"), "Expected HTML content type"
+
+# ---------------------------------------------
+# Input Validation Tests
+# ---------------------------------------------
+
+def test_invalid_input_missing_fields(client):
+    """
+    Test API endpoints with missing required fields.
+    """
+    endpoints = ['/add', '/subtract', '/multiply', '/divide']
+    
+    for endpoint in endpoints:
+        # Test missing 'b' parameter
+        response = client.post(endpoint, json={'a': 10})
+        assert response.status_code == 400, f"Expected 400 for {endpoint} with missing 'b'"
+        assert 'error' in response.json(), f"Expected error field in response for {endpoint}"
+
+def test_invalid_input_wrong_types(client):
+    """
+    Test API endpoints with invalid data types.
+    """
+    endpoints = ['/add', '/subtract', '/multiply', '/divide']
+    
+    for endpoint in endpoints:
+        # Test string input
+        response = client.post(endpoint, json={'a': "invalid", 'b': 5})
+        assert response.status_code == 400, f"Expected 400 for {endpoint} with string input"
+        assert 'error' in response.json(), f"Expected error field in response for {endpoint}"
+
+# ---------------------------------------------
+# HTTP Method Tests
+# ---------------------------------------------
+
+def test_invalid_http_methods(client):
+    """
+    Test that POST endpoints reject other HTTP methods.
+    """
+    endpoints = ['/add', '/subtract', '/multiply', '/divide']
+    
+    for endpoint in endpoints:
+        # Test GET method (should not be allowed)
+        response = client.get(endpoint)
+        assert response.status_code == 405, f"Expected 405 for GET {endpoint}"
+
+# ---------------------------------------------
+# Malformed JSON Tests
+# ---------------------------------------------
+
+def test_malformed_json(client):
+    """
+    Test endpoints with malformed JSON.
+    """
+    # Test one endpoint as representative (they all use the same validation)
+    response = client.post('/add', data='{"a": 10, "b":}', headers={'Content-Type': 'application/json'})
+    assert response.status_code == 400
