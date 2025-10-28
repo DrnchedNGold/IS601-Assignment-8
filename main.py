@@ -8,10 +8,22 @@ from fastapi.exceptions import RequestValidationError
 from app.operations import add, subtract, multiply, divide  # Ensure correct import path
 import uvicorn
 import logging
+import sys
+from datetime import datetime
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Enhanced logging configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('calculator_app.log')
+    ]
+)
 logger = logging.getLogger(__name__)
+
+# Log application startup
+logger.info("FastAPI Calculator Application Starting...")
 
 app = FastAPI()
 
