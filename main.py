@@ -11,14 +11,20 @@ import logging
 import sys
 from datetime import datetime
 
-# Enhanced logging configuration
+# Enhanced logging configuration - Docker-friendly
+handlers = [logging.StreamHandler(sys.stdout)]
+
+# Try to add file handler, but don't fail if we can't write to file (Docker permissions)
+try:
+    handlers.append(logging.FileHandler('calculator_app.log'))
+except PermissionError:
+    # In Docker or restricted environments, just log to stdout
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('calculator_app.log')
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger(__name__)
 
